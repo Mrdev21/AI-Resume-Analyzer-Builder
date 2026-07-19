@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Upload, FileText, X } from "lucide-react";
+import { analyzeResume } from "../services/resumeService";
 import ATSScoreCard from "../components/ATSScoreCard";
 
 const ResumeAnalyzer = () => {
@@ -7,6 +8,7 @@ const ResumeAnalyzer = () => {
   const [showResult, setShowResult] = useState(false);
   const [file, setFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
+  const [analysis, setAnalysis] = useState(null);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -28,18 +30,28 @@ const ResumeAnalyzer = () => {
     setFile(selectedFile);
   };
 
-  const handleAnalyze = () => {
-    if (!file) return;
+  const handleAnalyze = async () => {
+    if (!file) {
+      alert("Please upload a resume.");
+      return;
+    }
 
-    setShowResult(false);
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
+      const result = await analyzeResume(file);
+
+      console.log(result);
+
+      setAnalysis(result);
+
       setShowResult(true);
-    }, 2500);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
-
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -195,7 +207,7 @@ const ResumeAnalyzer = () => {
                   <button
                     onClick={() => {
                       setFile(null);
-                      setShowResult(false);
+                      setShowResult(true);
                       setLoading(false);
                     }}
                     className="self-end rounded-xl bg-red-50 p-3 transition duration-300 hover:scale-110 hover:bg-red-100 sm:self-auto"
@@ -262,7 +274,7 @@ const ResumeAnalyzer = () => {
 
             <div className="gradient-border animate-fade-in">
               <div className="gradient-border-content rounded-3xl bg-white/90 backdrop-blur-xl p-6 sm:p-8 shadow-xl h-full">
-                <ATSScoreCard score={91} />
+                <ATSScoreCard score={analysis?.atsScore || 0} />
               </div>
             </div>
 
@@ -281,18 +293,31 @@ const ResumeAnalyzer = () => {
                 </div>
 
                 <p className="mt-6 leading-8 text-slate-600">
-                  Your resume demonstrates strong Java, Spring Boot and React
-                  development skills with well-structured academic projects.
-                  <br />
-                  <br />
-                  Adding measurable achievements, certifications, internships
-                  and quantified project outcomes can further improve your ATS
-                  score and recruiter visibility.
+                  {analysis?.summary}
                 </p>
               </div>
             </div>
 
-            {/* Missing Skills */}
+            {/* Strengths */}
+
+            <div className="gradient-border group transition duration-500 hover:scale-[1.02]">
+              <div className="gradient-border-content rounded-3xl bg-white/90 backdrop-blur-xl p-8 shadow-xl h-full">
+                <h3 className="text-2xl font-bold text-slate-900">
+                  ✅ Strengths
+                </h3>
+
+                <div className="mt-8 flex flex-wrap gap-4">
+                  {analysis?.strengths?.map((item) => (
+                    <span
+                      key={item}
+                      className="rounded-full bg-green-100 px-5 py-2 font-medium text-green-700 transition hover:scale-105"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
 
             {/* Missing Skills */}
 
@@ -309,17 +334,14 @@ const ResumeAnalyzer = () => {
                 </div>
 
                 <div className="mt-8 flex flex-wrap gap-4">
-                  <span className="rounded-full bg-red-100 px-5 py-2 font-medium text-red-600 transition hover:scale-105">
-                    Docker
-                  </span>
-
-                  <span className="rounded-full bg-amber-100 px-5 py-2 font-medium text-amber-600 transition hover:scale-105">
-                    AWS
-                  </span>
-
-                  <span className="rounded-full bg-violet-100 px-5 py-2 font-medium text-violet-600 transition hover:scale-105">
-                    Kubernetes
-                  </span>
+                  {analysis?.weaknesses?.map((item) => (
+                    <span
+                      key={item}
+                      className="rounded-full bg-red-100 px-5 py-2 font-medium text-red-600"
+                    >
+                      {item}
+                    </span>
+                  ))}
                 </div>
               </div>
             </div>
@@ -339,21 +361,11 @@ const ResumeAnalyzer = () => {
                 </div>
 
                 <ul className="mt-8 space-y-5 text-slate-600">
-                  <li className="rounded-xl bg-slate-50 p-4 transition hover:bg-blue-50">
-                    ✅ Add measurable achievements with numbers.
-                  </li>
-
-                  <li className="rounded-xl bg-slate-50 p-4 transition hover:bg-blue-50">
-                    ✅ Improve your professional summary.
-                  </li>
-
-                  <li className="rounded-xl bg-slate-50 p-4 transition hover:bg-blue-50">
-                    ✅ Include certifications & internships.
-                  </li>
-
-                  <li className="rounded-xl bg-slate-50 p-4 transition hover:bg-blue-50">
-                    ✅ Add GitHub, LinkedIn & Portfolio links.
-                  </li>
+                  {analysis?.suggestions?.map((item) => (
+                    <li key={item} className="rounded-xl bg-slate-50 p-4">
+                      ✅ {item}
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>

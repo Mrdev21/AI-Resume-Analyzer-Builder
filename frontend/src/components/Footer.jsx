@@ -159,7 +159,7 @@ const Footer = () => {
                   <FaEnvelope className="text-white" />
                 </div>
 
-                <span>yourmail@gmail.com</span>
+                <span>hc102023@gmail.com</span>
               </a>
             </div>
           </div>

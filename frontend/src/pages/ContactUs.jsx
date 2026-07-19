@@ -107,7 +107,7 @@ const ContactUs = () => {
                     </h3>
 
                     <p className="text-slate-600">
-                      support@airesumebuilder.com
+                      support@hc102023.com
                     </p>
 
                   </div>
