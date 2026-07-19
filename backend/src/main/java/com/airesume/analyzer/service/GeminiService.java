@@ -2,6 +2,7 @@ package com.airesume.analyzer.service;
 
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentResponse;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -11,10 +12,19 @@ public class GeminiService {
     @Value("${gemini.api.key}")
     private String apiKey;
 
+    @PostConstruct
+    public void init() {
+        System.out.println("API Key Loaded: " + (apiKey != null && !apiKey.isBlank()));
+    }
+
     public String analyzeResume(String resumeText) {
 
         System.out.println("GeminiService called");
-        System.out.println("API Key: " + apiKey.substring(0, 5) + "*****");
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new IllegalStateException("Gemini API Key is missing.");
+        }
+
+        System.out.println("API Key Loaded Successfully");
 
         Client client = Client.builder()
                 .apiKey(apiKey)
